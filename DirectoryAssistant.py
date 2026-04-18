@@ -176,22 +176,12 @@ HTML = """<!DOCTYPE html>
     #shutdown-screen p{font-size:13px;opacity:.6}
     .tree-row.kb-focus{outline:2px solid rgba(122,184,125,.6);outline-offset:-2px}
     .file-card.kb-focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,122,76,.3)}
-    #update-banner{display:none;position:fixed;top:0;left:0;right:0;z-index:200;
-      background:#2d6b30;color:#d8e8d9;
-      font-size:13px;padding:9px 16px;
-      align-items:center;justify-content:space-between;gap:12px;
-      border-bottom:1px solid rgba(122,184,125,.4);}
-    #update-banner.show{display:flex;}
-    #update-banner a{color:var(--green-accent,#b8f0bb);font-weight:700;text-decoration:underline;}
-    #update-banner-close{background:none;border:none;color:rgba(216,232,217,.6);
-      font-size:18px;cursor:pointer;padding:0 4px;line-height:1;}
-    #update-banner-close:hover{color:#d8e8d9;}
   </style>
 </head>
 <body>
 <div id="sidebar">
   <div id="sidebar-header">
-    <div id="sidebar-eyebrow">Directory Assistant</div>
+    <div id="sidebar-eyebrow">Directory Assistant <span id="da-version" style="opacity:.5;font-weight:400"></span></div>
     <div id="project-name">読み込み中...</div>
   </div>
   <div id="sidebar-actions">
@@ -215,7 +205,7 @@ HTML = """<!DOCTYPE html>
               text-decoration:none;padding:6px 0 4px;letter-spacing:.01em;
               transition:color .15s;"
        onmouseover="this.style.color='rgba(216,232,217,.8)'"
-       onmouseout="this.style.color='rgba(216,232,217,.45)'">GitHub Link</a>
+       onmouseout="this.style.color='rgba(216,232,217,.45)'" id="gh-release-link">GitHub</a>
     <button class="btn btn-danger" id="btn-shutdown" style="font-size:11px">⏻ 終了</button>
   </div>
 </div>
@@ -227,10 +217,6 @@ HTML = """<!DOCTYPE html>
   <div id="content-area">
     <div class="center-msg"><div class="big"><span class="spin">⟳</span></div><h2>読み込み中...</h2></div>
   </div>
-</div>
-<div id="update-banner">
-  <span id="update-banner-msg"></span>
-  <button id="update-banner-close" title="閉じる">✕</button>
 </div>
 <div id="toast"></div>
 <div id="context-menu">
@@ -439,6 +425,7 @@ async function loadTree(){
     appPlatform=(i&&i.platform)||'';
     document.getElementById('project-name').textContent=i.root_name;
     document.title=i.root_name;
+    if(i.version)document.getElementById('da-version').textContent='v'+i.version;
   }catch{}
   document.getElementById('stats').textContent=`フォルダ ${treeData.folder_count}\u3000ファイル ${treeData.file_count}`;
   navHistory=[];historyIdx=-1;
@@ -739,24 +726,12 @@ contentArea.addEventListener('click',e=>{
 });
 loadTree();
 (function(){
-  const banner=document.getElementById('update-banner');
-  const msg=document.getElementById('update-banner-msg');
-  document.getElementById('update-banner-close').addEventListener('click',()=>banner.classList.remove('show'));
-  function showBanner(latest,title){
-    const label=title?'<strong>'+title+'</strong>':'バージョン <strong>'+latest+'</strong>';
-    msg.innerHTML='🌿 更新があります：'+label
-      +' — <a href="https://github.com/raw-slnc/directory_assistant_py/releases" target="_blank">リリースページへ</a>';
-    banner.classList.add('show');
-  }
-  const params=new URLSearchParams(location.search);
-  if(params.get('update_test')==='1'){showBanner('test-version','テスト表示');return;}
-  Promise.all([
-    fetch('/api/info').then(r=>r.json()),
-    fetch('https://api.github.com/repos/raw-slnc/directory_assistant_py/releases/latest',
-      {signal:AbortSignal.timeout(5000)}).then(r=>r.ok?r.json():null)
-  ]).then(([info,data])=>{
-    if(!data||!data.tag_name||!info)return;
-    if(data.tag_name.replace(/^v/,'')!==info.version)showBanner(data.tag_name,data.name||null);
+  fetch('https://api.github.com/repos/raw-slnc/directory_assistant_py/releases/latest',
+    {signal:AbortSignal.timeout(5000)}).then(r=>r.ok?r.json():null)
+  .then(data=>{
+    if(!data||!data.tag_name)return;
+    const el=document.getElementById('gh-release-link');
+    el.textContent='GitHub '+data.tag_name;
   }).catch(()=>{});
 })();
 </script>

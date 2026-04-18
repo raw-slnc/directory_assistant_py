@@ -299,6 +299,7 @@
     <li class="nav-link-item"><a href="#start" class="ja">起動方法</a><a href="#start" class="en">Launch</a></li>
     <li class="nav-link-item"><a href="#trouble" class="ja">トラブル</a><a href="#trouble" class="en">Troubleshooting</a></li>
     <li class="nav-link-item"><a href="#version" class="ja">バージョン</a><a href="#version" class="en">Version</a></li>
+    <li class="nav-link-item"><a href="#update" class="ja">アップデート</a><a href="#update" class="en">Update</a></li>
     <li>
       <div class="lang-switcher">
         <button class="lang-btn active" data-lang="ja">日本語</button>
@@ -564,6 +565,30 @@
     <div class="info-box">
       <span class="ja">💡 <strong>なぜ分けるのか:</strong> ランチャーのデザイン変更など「配布形態の更新」と、Python スクリプト本体の機能変更は独立して行われるため、バージョンを別管理することで柔軟な更新が可能になります。</span>
       <span class="en">💡 <strong>Why separate?</strong> Distribution changes (launcher design, docs) and core script updates happen independently. Keeping them separate allows either to be updated without bumping the other.</span>
+    </div>
+  </div>
+
+  <!-- UPDATE -->
+  <div id="update" class="section">
+    <div class="section-label ja">アップデート</div>
+    <div class="section-label en">How to Update</div>
+    <h2 class="section-title ja">新しいバージョンへの更新方法</h2>
+    <h2 class="section-title en">Updating to a New Version</h2>
+    <p class="section-lead ja">新しいリリースが公開されたら、古いランチャーを削除して最新版に置き換えてください。</p>
+    <p class="section-lead en">When a new release is published, delete the old launcher and replace it with the latest version.</p>
+
+    <ol style="font-size:14px;line-height:2.2;padding-left:1.4em;color:var(--text)">
+      <li class="ja">現場フォルダ内の旧ランチャー（<code>.bat</code> / <code>.command</code> / <code>.sh</code>）を削除する</li>
+      <li class="ja"><a href="https://github.com/raw-slnc/directory_assistant_py/releases" target="_blank">GitHub リリースページ</a>から最新のランチャーをダウンロードする</li>
+      <li class="ja">現場フォルダに置いてダブルクリック → 本体（<code>DirectoryAssistant.py</code>）が自動で最新版に更新される</li>
+      <li class="en">Delete the old launcher (<code>.bat</code> / <code>.command</code> / <code>.sh</code>) from the project folder</li>
+      <li class="en">Download the latest launcher from the <a href="https://github.com/raw-slnc/directory_assistant_py/releases" target="_blank">GitHub Releases page</a></li>
+      <li class="en">Place it in the project folder and double-click — <code>DirectoryAssistant.py</code> will be automatically updated</li>
+    </ol>
+
+    <div class="info-box" style="margin-top:20px">
+      <span class="ja">📁 複数のフォルダにランチャーを置いている場合は、それぞれのフォルダで置き換えてください。</span>
+      <span class="en">📁 If you have launchers in multiple folders, replace each one individually.</span>
     </div>
   </div>
 

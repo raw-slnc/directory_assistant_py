@@ -111,6 +111,16 @@ Copyright (C) 2026 Hideharu Masai
 | macOS | `DirectoryAssistantPy.command` |
 | Linux | `DirectoryAssistantPy.sh` |
 
+## アップデート方法
+
+新しいリリースが公開された場合は、古いランチャーを削除し、最新版に置き換えてください。
+
+1. 現場フォルダ内の旧ランチャー（`.bat` / `.command` / `.sh`）を削除
+2. [GitHub リリースページ](https://github.com/raw-slnc/directory_assistant_py/releases)から最新のランチャーをダウンロード
+3. 現場フォルダに置いてダブルクリック → 本体（`DirectoryAssistant.py`）が自動で最新版に更新されます
+
+> 複数のフォルダにランチャーを置いている場合は、それぞれ置き換えてください。
+
 ## できないこと（設計上）
 
 - ファイルの作成・移動・名前変更・削除
