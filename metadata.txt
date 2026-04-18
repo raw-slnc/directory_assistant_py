@@ -2,7 +2,7 @@ name: DirectoryAssistantPy
 channel: github
 repo: https://github.com/raw-slnc/directory_assistant_py
 version: 0.1.0
-da_version: 2026-04-18.2
+da_version: 2026-04-18.3
 platforms: macOS, Linux, Windows
 notes:
 - version and DA_VERSION are managed separately.
