@@ -1,0 +1,7 @@
+backup/
+Master/
+*.zip
+__pycache__/
+*.pyc
+.server.pid
+.server.log
