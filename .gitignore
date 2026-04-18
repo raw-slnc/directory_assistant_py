@@ -1,5 +1,6 @@
 backup/
 Master/
+Manual/
 *.zip
 __pycache__/
 *.pyc
