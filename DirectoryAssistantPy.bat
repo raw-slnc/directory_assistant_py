@@ -1,190 +1,97 @@
 @echo off
-
 if not defined DA_STDERR_SUPPRESSED (
-
   set "DA_STDERR_SUPPRESSED=1"
-
   call "%~f0" %* 2>nul
-
   exit /b %errorlevel%
-
 )
-
 chcp 65001 >nul
-
 setlocal
 
-
-
 set "ROOT=%~dp0"
-
 if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
-
 set "PORT=8742"
-
 set "HOST=127.0.0.1"
-
 set "URL=http://localhost:%PORT%"
-
 set "PID_FILE=%ROOT%\.server.pid"
-
 set "LOG_FILE=%TEMP%\DirectoryAssistantPy_%PORT%.log"
-
 set "GUIDE_FILE=%ROOT%\PythonInstallGuide.html"
-
 set PYTHONDONTWRITEBYTECODE=1
 
-
-
 echo STEP 1 %date% %time% > "%LOG_FILE%"
-
 echo root=%ROOT% port=%PORT% >> "%LOG_FILE%"
-
 attrib +h +s "%LOG_FILE%" >nul 2>nul
-
 set "DA_VERSION=2026-04-18.3"
-
 set "_need_write_py="
-
 if exist "%ROOT%\DirectoryAssistant.py" (
-
   powershell -NoProfile -Command ^
-
     "try{ if(Select-String -LiteralPath '%ROOT%\\DirectoryAssistant.py' -SimpleMatch 'DA_VERSION = \"2026-04-18.3\"' -Quiet){ exit 0 } else { exit 1 } }catch{ exit 1 }" >nul 2>nul
-
   if errorlevel 1 set "_need_write_py=1"
 ) else (
-
   set "_need_write_py=1"
-
 )
-
 if defined _need_write_py (
-
   echo write_py=1>> "%LOG_FILE%"
-
   powershell -NoProfile -Command ^
-
     "$lines=Get-Content -LiteralPath '%~f0' -Encoding UTF8; " ^
-
     "$i=[Array]::IndexOf($lines,'::DA_PY_PAYLOAD_BEGIN'); $j=[Array]::IndexOf($lines,'::DA_PY_PAYLOAD_END'); " ^
-
     "if($i -lt 0 -or $j -lt 0 -or $j -le $i){ throw 'payload not found' }; " ^
-
     "$b64=( $lines[($i+1)..($j-1)] | ForEach-Object { $_ -replace '^::','' } ) -join ''; " ^
-
     "$bytes=[Convert]::FromBase64String(($b64 -replace '\s','')); " ^
-
     "$ms=New-Object IO.MemoryStream(,$bytes); " ^
-
     "$gz=New-Object IO.Compression.GzipStream($ms,[IO.Compression.CompressionMode]::Decompress); " ^
-
     "$out=New-Object IO.FileStream('%ROOT%\DirectoryAssistant.py',[IO.FileMode]::Create,[IO.FileAccess]::Write); " ^
-
     "$gz.CopyTo($out); $out.Close(); $gz.Close(); $ms.Close();" >> "%LOG_FILE%" 2>&1
-
 )
-
-
 
 python --version >nul 2>&1
-
 if %errorlevel% neq 0 (
-
   echo python_not_found=1>> "%LOG_FILE%"
-
   if exist "%GUIDE_FILE%" (
-
     start "" "%GUIDE_FILE%" >nul 2>nul
-
   ) else (
-
     start "" "https://www.python.org/downloads/windows/" >nul 2>nul
-
   )
-
   exit /b 1
-
 )
-
 set "PY_LAUNCH=python"
-
 where pythonw >nul 2>&1
-
 if %errorlevel% equ 0 set "PY_LAUNCH=pythonw"
 
-
-
 for /f "usebackq delims=" %%S in (`powershell -NoProfile -Command ^
-
   "try { $i=Invoke-RestMethod -UseBasicParsing -TimeoutSec 1 http://%HOST%:%PORT%/api/info; " ^
-
-  "$want=(Resolve-Path -LiteralPath '%ROOT%').Path.TrimEnd('\'); " ^
-
-  "$srv=$i.root_path; if(-not $srv){ 'UNKNOWN' } else { $srv=$srv.ToString().TrimEnd('\'); if($srv -ieq $want){'MATCH'}else{'MISMATCH'} } } catch { 'NONE' }"`) do set "_srv=%%S"
-
-
+  "$want=(Resolve-Path -LiteralPath '%ROOT%').Path.TrimEnd('\\'); " ^
+  "$srv=$i.root_path; if(-not $srv){ 'UNKNOWN' } else { $srv=$srv.ToString().TrimEnd('\\'); if($srv -ieq $want){'MATCH'}else{'MISMATCH'} } } catch { 'NONE' }"`) do set "_srv=%%S"
 
 if "%_srv%"=="MATCH" (
-
   attrib +h +s "%PID_FILE%" >nul 2>nul
-
   powershell -NoProfile -Command "try{Start-Process '%URL%' -ErrorAction Stop | Out-Null}catch{}" >nul 2>nul
-
   exit /b 0
-
 )
-
 if "%_srv%"=="MISMATCH" (
-
   powershell -NoProfile -Command "try{Invoke-RestMethod -UseBasicParsing -TimeoutSec 1 -Method POST http://%HOST%:%PORT%/api/shutdown | Out-Null}catch{}" >> "%LOG_FILE%" 2>&1
-
   timeout /t 1 /nobreak >nul
-
 )
-
-
 
 del "%PID_FILE%" 2>nul
 
-
-
 echo STEP 4 %date% %time%>> "%LOG_FILE%"
-
 start "" "%PY_LAUNCH%" -B "%ROOT%\DirectoryAssistant.py" --root "%ROOT%" --bind "%HOST%" --port %PORT% --no-open >nul 2>nul
 
-
-
 set "_ok="
-
 for /f "usebackq delims=" %%S in (`powershell -NoProfile -Command ^
-
   "for($i=0;$i -lt 25;$i++){try{Invoke-RestMethod -UseBasicParsing -TimeoutSec 1 http://%HOST%:%PORT%/api/info | Out-Null; 'OK'; break}catch{Start-Sleep -Milliseconds 200}}"`) do set "_ok=%%S"
 
-
-
 if "%_ok%"=="OK" (
-
   attrib +h +s "%PID_FILE%" >nul 2>nul
-
   powershell -NoProfile -Command "try{Start-Process '%URL%' -ErrorAction Stop | Out-Null}catch{}" >nul 2>nul
-
   exit /b 0
-
 )
 
-
-
 echo STEP 9 %date% %time%>> "%LOG_FILE%"
-
 echo failed_to_start=1>> "%LOG_FILE%"
-
 exit /b 1
-
-
-
 ::DA_PY_PAYLOAD_BEGIN
-::H4sIAPZo42kC/+19a3McyZHY9/kVzaHE7hZnGgMQAMEZDmiSAEVaXJJBYCVtUIzZnp4aTC96unu7
+::H4sIAOp942kC/+19a3McyZHY9/kVzaHE7hZnGgMQAMEZDmiSAEVaXJJBYCVtUIzZnp4aTC96unu7
 ::e/DQcCIWpHy2b6WTQ49dO07y+mSFHj6vz+c76eST4hThn7LQrqRPup/gzHp0V/VjBuDuWlbEEbvA
 ::THVVVlZmVlZmVlb1H37564sXliZxtNR3/SXiH2jhcTIK/Cu1mjsOgyjR4uO4Bv9bg8BPeoeRm5Be
 ::/zghTjAgWlfbjSYkrWpHe6EdxUR8fyMOfPE5iGtBbEEHbhT4VkySARnaEy8x6o9e27378MHWwwe7
@@ -413,6 +320,3 @@ exit /b 1
 ::VuT1C+S4H2BGKZ6siSahFHZITc0PT7730fs/qItsN/o+9/bZZa9WAxL3aOyq16OWcK+H5kOvx41g
 ::ZkvUav8XJO6n+h20AAA=
 ::DA_PY_PAYLOAD_END
-
-
-
