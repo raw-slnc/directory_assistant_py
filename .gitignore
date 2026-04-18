@@ -1,6 +1,7 @@
 backup/
 Master/
 Manual/
+icon.png
 *.zip
 __pycache__/
 *.pyc

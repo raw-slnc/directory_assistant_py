@@ -11,7 +11,7 @@ A cross-platform local tool that opens a project folder as a browser-based file 
 - **Browser-like navigation**: Breadcrumb trail, back/forward buttons, full keyboard support (Alt+←→)
 - **Auto-shutdown**: Server stops automatically 30 seconds after the browser tab is closed — no lingering background processes
 - **Self-updating launcher**: Each launcher embeds the latest `DirectoryAssistant.py` and extracts it on startup
-- **Local-only**: Binds to `127.0.0.1` only. No network access, no external dependencies, no data sent anywhere
+- **Local-only**: Binds to `127.0.0.1` only. No data sent anywhere. Checks GitHub Releases API on load to display the latest version — no credentials, no tracking
 
 ## Design philosophy
 
@@ -91,7 +91,7 @@ Copyright (C) 2026 Hideharu Masai
 - **ブラウザライクなナビゲーション**: パンくずリスト・前後ボタン・キーボード操作（Alt+←→）
 - **自動終了**: ブラウザタブを閉じると 30 秒後にサーバーが自動終了。プロセスが残り続けない
 - **自動更新**: ランチャーが最新の本体（`DirectoryAssistant.py`）を内包し、起動時に自動展開
-- **ローカル完結**: `127.0.0.1` のみにバインド。外部送信ゼロ、ネットワーク不要
+- **ローカル完結**: `127.0.0.1` のみにバインド。外部へのデータ送信ゼロ。最新バージョン表示のため GitHub Releases API を参照（認証・追跡なし）
 
 ## 設計思想
 

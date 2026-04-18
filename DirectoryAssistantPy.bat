@@ -50,7 +50,7 @@ if exist "%ROOT%\DirectoryAssistant.py" (
 
   powershell -NoProfile -Command ^
 
-    "try{ if(Select-String -LiteralPath '%ROOT%\\DirectoryAssistant.py' -SimpleMatch 'DA_VERSION = \"2026-04-18.2\"' -Quiet){ exit 0 } else { exit 1 } }catch{ exit 1 }" >nul 2>nul
+    "try{ if(Select-String -LiteralPath '%ROOT%\\DirectoryAssistant.py' -SimpleMatch 'DA_VERSION = \"2026-04-18.3\"' -Quiet){ exit 0 } else { exit 1 } }catch{ exit 1 }" >nul 2>nul
 
   if errorlevel 1 set "_need_write_py=1"
 ) else (
