@@ -19,7 +19,7 @@ from urllib.parse import urlparse
 
 DEFAULT_PORT = 8742
 DEFAULT_BIND = "127.0.0.1"
-DA_VERSION = "2026-04-18.2"
+DA_VERSION = "2026-04-18.3"
 VERSION = "0.1.0"
 
 EXCLUDE = {
@@ -857,6 +857,22 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _check_origin(self) -> bool:
+        origin = self.headers.get("Origin", "")
+        if not origin:
+            return True  # curl / direct call — not a browser cross-origin request
+        allowed = {f"http://127.0.0.1:{self.port}", f"http://localhost:{self.port}"}
+        return origin in allowed
+
+    def _resolve_safe(self, rel: str):
+        root = self.root_path.resolve()
+        try:
+            resolved = (self.root_path / rel).resolve()
+            resolved.relative_to(root)
+            return resolved
+        except (ValueError, Exception):
+            return None
+
     def do_GET(self):
         global last_ping
         p = urlparse(self.path).path
@@ -911,27 +927,30 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
 
     def do_POST(self):
+        if not self._check_origin():
+            self.send_json({"ok": False, "error": "Forbidden"}, 403)
+            return
         pid_file = self.root_path / PID_FILENAME
         length = int(self.headers.get("Content-Length", 0))
         body = json.loads(self.rfile.read(length)) if length else {}
         p = urlparse(self.path).path
         if p == "/api/open":
-            ap = str(self.root_path / body.get("path", ""))
-            if not Path(ap).exists():
+            ap = self._resolve_safe(body.get("path", ""))
+            if ap is None or not ap.exists():
                 self.send_json({"ok": False, "error": "ファイルが見つかりません"}, 404)
                 return
             try:
-                open_with_app(ap)
+                open_with_app(str(ap))
                 self.send_json({"ok": True})
             except Exception as e:
                 self.send_json({"ok": False, "error": str(e)}, 500)
         elif p == "/api/reveal":
-            ap = str(self.root_path / body.get("path", ""))
-            if not Path(ap).exists():
+            ap = self._resolve_safe(body.get("path", ""))
+            if ap is None or not ap.exists():
                 self.send_json({"ok": False, "error": "ファイルが見つかりません"}, 404)
                 return
             try:
-                reveal_in_file_manager(ap)
+                reveal_in_file_manager(str(ap))
                 self.send_json({"ok": True})
             except Exception as e:
                 self.send_json({"ok": False, "error": str(e)}, 500)
@@ -944,10 +963,13 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
 
     def do_OPTIONS(self):
+        origin = self.headers.get("Origin", "")
+        allowed = {f"http://127.0.0.1:{self.port}", f"http://localhost:{self.port}"}
         self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        if origin in allowed:
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
 
