@@ -20,7 +20,7 @@ from urllib.parse import urlparse
 DEFAULT_PORT = 8742
 DEFAULT_BIND = "127.0.0.1"
 DA_VERSION = "2026-04-18.3"
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
 EXCLUDE = {
     ".DS_Store",
